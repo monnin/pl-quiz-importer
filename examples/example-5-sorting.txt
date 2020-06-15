@@ -1,0 +1,65 @@
+#
+#	By default all ANSWERS are sorted alphabetically
+#
+#	(this means, go ahead and put the right answer first - it won't
+#	 matter when the questions are imported into the LMS)
+#
+
+Which of the following is a fruit?
+	zebra		grass		*apple		blue
+
+#The above answers will get converted in this order:
+# 	apple		blue		grass		zebra
+#
+
+#--------------------------------------------------------------------
+
+# 	You can force your order by starting with an !
+
+!Which of the following has the most letters?
+	try	a	*quiz	for	fun
+
+#The above answers will get converted in this order:
+#	try	a	*quiz	for	fun
+
+#--------------------------------------------------------------------
+
+#	If your answers start with ANY of the following, they will
+#	automatically be placed LAST
+#
+#	all...
+#	none...
+#	both...
+#	neither
+
+Which of the following animals drinks milk?
+	*all mammals	zebras	cows	horses		deer
+
+#--------------------------------------------------------------------
+
+#	If your answer contains more than one of the following, they
+#	are displayed in the following order
+
+#	both...
+#	neither...
+#	all...
+#	none...
+
+Which of the following is true?
+	A dollar is part of US currency
+	A dime is part of US currency
+	neither a dollar nor a dime are part of US currency
+	*both a dollar and dime are part of US currency
+
+# (In the example above, "both" will be placed before "neither")
+
+#--------------------------------------------------------------------
+
+#	If you use the any of the "all of the above" and "none of the above"
+#	shortcuts (aka +all), these too will be placed at the end
+#
+#	(even if you put the special forms anywhere)
+
+Which of the following flies?
+	+all	bird		duck		bee
+

@@ -1,0 +1,54 @@
+# This example shows +, +all, +none, -, -none options for MC questions
+
+# This allows for "none of the above" and "all of the above" to be 
+#   added quickly.
+
+#---------------------------------------------------------------
+
+# First, a standard MC question
+
+Which of the following is greater than ten?
+	1	2	*20	-20
+
+#---------------------------------------------------------------
+
+# Second, use "+" to add "all of the above" and "none of the above", 
+#  both of which will be indicated to be WRONG answers
+
+Which of the following is greater than fifteen?
+	1	2	*20	-20	+
+
+#---------------------------------------------------------------
+
+# Now, use the "+all" to add "all of the above" and "none of the above",
+#  but this time "all of the above" is correct
+
+
+Which of the following is greater than ten?
+	20	30	40	50	+all
+
+#---------------------------------------------------------------
+
+# Now use the "+none" to add "all of the above" and "none of the above",
+#  with this time "none of the above" being the correct answer
+
+Which of the following is less than ten?
+	20	30	40	50	+none
+
+#---------------------------------------------------------------
+
+# Now, add ONLY "none of the above", but make it a WRONG answer
+
+# (I use the "-" and "-none" when I have negative questions
+#  such as "Which of the following is NOT" [although I try to avoid those])
+
+Which of the following is less than zero?
+	20	30	40	50	-
+
+#---------------------------------------------------------------
+
+# Next, add ONLY "none of the above", but make it the CORRECT answer
+
+Which of the following is greater than zero?
+	20	30	40	50	-none
+

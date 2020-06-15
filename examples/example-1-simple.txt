@@ -1,0 +1,40 @@
+# Questions from a fictious PIZZA 101 course
+
+# New questions begin with no leading spaces
+#   ...Continuation lines have a leading space
+#
+# (extra spacing is NOT required)
+
+# T/F - Just indicate what the right answer is after the question
+#
+#	Use a TAB (or multiple TABs) between question and answer
+#
+#       (True/False = uppercase/lowercase does not matter)
+#	(True/False = can also be just T or F)
+
+All pizzas are round.					False
+Some pizza crusts are made out of wheat flour.		True
+Pizzas were invented in France				False
+
+# MC - List all of the answers, with the correct answer starting with a *
+#      (answers will automatically be alphabetically unless the QUESTION
+#	starts with a ! )
+#
+#	special options (+,+ALL,+NONE,-NONE) also exist
+
+Which is not a pizza topping?
+	pepperoni	mushrooms	black olives	
+	hot peppers			*motor oil
+
+Which of the following can feed the most number of people?
+	*large pizza
+	medium pizza
+	small pizza
+	all of the above are the same size
+
+# The next question adds an "all of the above" and "none of the above", both
+# of which are wrong answers
+
+Which US city is known for a specific style of pizza?
+	*New York	Iowa City	Louisville	Arundel
+	+	

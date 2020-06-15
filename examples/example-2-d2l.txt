@@ -1,0 +1,41 @@
+# Questions from a fictious PIZZA 101 course
+
+# This one adds differing POINTS and DIFFICULTY
+#
+# (I normally don't use DIFFICULTY levels, and also normally import into
+#  a Library Pool, so there even the Points doesn't matter)
+
+# Special inputs are comments that begin with #@
+
+#@Points: 10	-- Change both T/F and MC questions to be 10 points/question
+
+#@TF_Points: 5	-- Change only T/F questions to be 5 points/question
+#@MC_Points: 7	-- Change only MC questions to be 7 points/question
+
+All pizzas are round.					False
+
+#@DIFFICULTY: 2	-- You can change the difficulty at any point
+#                  (works on all following questions)
+
+Some pizza crusts are made out of wheat flour.		True
+
+#@ TF_POINTS: 2.5  -- You can also change the points at any question too
+#                     (affects all subsequent questions)
+
+Pizzas were invented in France				False
+
+#@ Difficulty: 2   -- Difficulty, DIFFICULTY, difficulty -- all are taken
+
+Which is not a pizza topping?
+	pepperoni	mushrooms	black olives	
+	hot peppers			*motor oil
+
+Which of the following can feed the most number of people?
+	*large pizza
+	medium pizza
+	small pizza
+	all of the above are the same size
+
+Which US city is known for a specific style of pizza?
+	*New York	Iowa City	Louisville	Arundel
+	+	

@@ -1,0 +1,27 @@
+# Questions from a fictious PIZZA 101 course
+
+# This one adds multiple categories
+#
+
+#@category: easy
+
+Some pizza crusts are made out of wheat flour.		True
+Pizzas were invented in France				False
+
+#@category: medium
+
+Which is not a pizza topping?
+	pepperoni	mushrooms	black olives	
+	hot peppers			*motor oil
+
+Which of the following can feed the most number of people?
+	*large pizza
+	medium pizza
+	small pizza
+	all of the above are the same size
+
+#@category: hard
+
+Which US city is known for a specific style of pizza?
+	*New York	Iowa City	Louisville	Arundel
+	+	

@@ -32,4 +32,4 @@ More about the input file format:
 
 ## Usage:
 
-   perl convert-q.pl [-b|-d|-t|-p] <input-file>
+   perl convert-q.pl [-b|-d|-t|-p] *input-file*

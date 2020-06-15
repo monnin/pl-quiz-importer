@@ -7,6 +7,10 @@
 
 # Special inputs are comments that begin with #@
 
+# Change the prefix for all questions
+
+#@Prefix: PIZZA101
+
 #@Points: 10	-- Change both T/F and MC questions to be 10 points/question
 
 #@TF_Points: 5	-- Change only T/F questions to be 5 points/question

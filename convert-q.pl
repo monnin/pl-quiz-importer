@@ -4,6 +4,8 @@ use strict;
 
 my $DEF_FORMAT = "d";	# Default format d=desire2learn, b=blackboard, ...
 
+my $IDPREFIX = "Q";	# Can be changed with #@Prefix
+
 my $TF_POINTS = 1;	# You can change this if you want a diff default
 my $MC_POINTS = 1;	# You can change this if you want a diff default
 
@@ -252,10 +254,10 @@ sub output_desire2learn {
 						#  a seperate fill-in-the-blank 
 
 	if ($code eq "TF") {
-		$id = "Q-TF-" . $TF_COUNT;
+		$id = "$IDPREFIX-TF-" . $TF_COUNT;
 		}
 	else {
-		$id = "Q-MC-" . $MC_COUNT;
+		$id = "$IDPREFIX-MC-" . $MC_COUNT;
 		}
 
 	$ret  = "NewQuestion,$code,\r\nID,$id\r\n";
@@ -490,6 +492,10 @@ sub read_file {
 		# Remove any comments
 		# (but first check for @category directive)
 		if ($currline =~ /^\s*#/) {
+
+			#
+			# Handle #@Category: abc
+			#
 			if ($currline =~ /#.*\@\s*Category(:|\s)\s*(\S+)/i) {
 				$currcategory = $2;
 
@@ -502,9 +508,11 @@ sub read_file {
 					}
 				}
 			#
-			#	Handle #Points: xxx
+			#	Handle #@Points: xxx
 			#
-			if ($currline =~ /#.*\@\s*(tf_|mc_|)points?(:|\s)\s*(\S+)/i) {
+			if ($currline =~ 
+			     /#.*\@\s*(tf_|mc_|)points?(:|\s)\s*(\S+)/i) {
+
 				$letter = substr($1,0,1);
 
 				if ($letter eq "t" || $letter eq "T") {
@@ -520,9 +528,11 @@ sub read_file {
 				}
 
 			#
-			#	Handle #Difficulty: xxx
+			#	Handle #@Difficulty: xxx
 			#
-			if ($currline =~ /#.*\@\s*(tf_|mc_|)difficulty(:|\s)\s*(\S+)/i) {
+			if ($currline =~ 
+			     /#.*\@\s*(tf_|mc_|)difficulty(:|\s)\s*(\S+)/i) {
+
 				$letter = substr($1,0,1);
 
 				if ($letter eq "t" || $letter eq "T") {
@@ -536,6 +546,14 @@ sub read_file {
 					$MC_DIFFICULTY = $3;
 					}
 				}
+
+			#
+			#	Handle #Prefix: xxx
+			#
+			if ($currline =~ /#.*\@\s*prefix(:|\s)\s*(\S+)/i) {
+				$IDPREFIX = $2;
+				}
+
 
 			# Now remove the comments
 			$currline =~ s/^\s*#.*//;

@@ -6,11 +6,39 @@ my $DEF_FORMAT = "d";	# Default format d=desire2learn, b=blackboard, ...
 
 my $IDPREFIX = "Q";	# Can be changed with #@Prefix
 
-my $TF_POINTS = 1;	# You can change this if you want a diff default
-my $MC_POINTS = 1;	# You can change this if you want a diff default
+my $TF_POINTS = 2;	# You can change this if you want a diff default
+my $MC_POINTS = 2;	# You can change this if you want a diff default
+my $SA_POINTS = 5;
 
 my $TF_DIFFICULTY = 1;	# You can change this if you want a diff default
 my $MC_DIFFICULTY = 1;	# You can change this if you want a diff default
+my $SA_DIFFICULTY = 1;	# You can change this if you want a diff default
+
+my %LINE_TO_QUESTION;
+my %KEYWORDS_TO_LINE;
+
+my @SMALL_WORDS = ('a', 'an', 'any', 'all', 'are', 'and','as','at','always',
+		   'be', 'but','by','between','both',
+		   'can', 'cannot',
+		   'does', 'do', 'different','describe',
+		   'every','each', 
+		   'for', 'false',
+		   'good',
+		   'has','have','how','hint',
+		   'is','in','it','if','into',
+		   'like',
+		   'might',
+		   'not',
+		   'one', 'only', 'of', 'or', 'other',
+		   'some','same',
+		   'the', 'this', 'that', 'to', 'too', 'true', 'two',
+			'term','terms','than','thing',
+		   'use','used','uses',
+		   'which', 'when', 'who','with', 'within','what',
+		   'you');
+
+
+my %SMALL_WORDS_MAP = map { $_ => 1 } @SMALL_WORDS;  # A hash is more convenient
 
 #
 # (FYI - Probably don't want to change the starting counts...)
@@ -21,6 +49,82 @@ my $FALSE_COUNT = 0;
 
 my $TF_COUNT = 0;
 my $MC_COUNT = 0;
+my $SA_COUNT = 0;
+
+#
+#----------------------------------------------------------------------
+#
+sub csv_escape {
+	my($str) = @_;
+
+	$str =~ s/"/""/g;
+
+	return $str;
+	}
+
+#
+#----------------------------------------------------------------------
+#
+sub question_to_keywords {
+	my($q) = @_;
+	my(%words);
+	my($word);
+
+	$q = lc($q);			# Force it to lowercase
+	$q =~ s/[[:punct:]]//g;		# Remove all punctuation chars too
+
+
+	for $word (split(/\s+/,$q)) {
+		if (!defined($SMALL_WORDS_MAP{$word})) {
+			$words{$word} = 1;
+			}
+		}
+
+	# Now return a sorted version of the list
+
+	return join(" ", sort(keys(%words)));
+	}
+
+#
+#----------------------------------------------------------------------
+#
+sub check_for_dup_question {
+	my($lineno,$question) = @_;
+	my($keystr, $otherline);
+
+	# First store the exact question
+	$LINE_TO_QUESTION{$lineno} = $question;  
+
+	$keystr = question_to_keywords($question);
+
+	#print STDERR "Debug: $question => $keystr\n";
+	
+	if (defined($KEYWORDS_TO_LINE{$keystr})) {
+		$otherline = $KEYWORDS_TO_LINE{$keystr};
+
+		#
+		#  Identical match or just similar?
+		#
+		if ($LINE_TO_QUESTION{$otherline} eq $question) {
+			print STDERR 
+			      "Warning!!! $lineno,$otherline are IDENTICAL\n";
+			}
+		else {
+			print STDERR 
+			      "Warning!!! $lineno,$otherline are similar\n";
+			}
+
+		print STDERR "\t$otherline: " . 
+			     $LINE_TO_QUESTION{$otherline} . "\n";
+
+		print STDERR "\t$lineno: $question\n\n";
+		}
+	else {
+		# No match.  Save the first occurance
+		$KEYWORDS_TO_LINE{$keystr} = $lineno;
+		}
+
+	}
 
 #
 #----------------------------------------------------------------------
@@ -32,11 +136,14 @@ sub process_question {
 	$question =~ s/^\s+$//;	
 	$question =~ s/^\d+\)\s+//;
 
-	if (($question =~ /[\.\?]/) && ($question !~ /[\.\?]"?$/)) {
+
+	if (($question =~ /[\.\?]/) && ($question !~ /[\.\?]("|\))*$/)) {
 		print STDERR "$lineno: Warning, did you forget the TAB " .
 			     "after the question?\n";
 		print STDERR "   $question\n";
 		}
+
+	&check_for_dup_question($lineno, $question);
 
 	return $question;
 	}
@@ -135,6 +242,7 @@ sub handle_mc_options {
 		# Save this answer
 		$i = $#result + 1;
 
+
 		$result[$i]{answer} = $cur;
 		$result[$i]{tag} = $next;
 
@@ -178,6 +286,14 @@ sub handle_mc_options {
 			# This should not happen
 			@result = ( "???" );
 			}
+		}
+        elsif (($numincorrect + $numcorrect == 0)) {
+		# No answers?  Then assume short answer
+
+		$code = "SA";
+		$SA_COUNT++;
+
+		@result = ();
 		}
 	else {
 		if ($numincorrect < 1) {
@@ -256,12 +372,17 @@ sub output_desire2learn {
 	if ($code eq "TF") {
 		$id = "$IDPREFIX-TF-" . $TF_COUNT;
 		}
+	elsif ($code eq "SA") {
+		$id = "$IDPREFIX-SA-" . $SA_COUNT;
+		$code = "WR";		# Change it to "written response" type
+		}
 	else {
 		$id = "$IDPREFIX-MC-" . $MC_COUNT;
 		}
 
 	$ret  = "NewQuestion,$code,\r\nID,$id\r\n";
-	$ret .= "QuestionText,\"$question\"\r\n";
+
+	$ret .= "QuestionText,\"" . &csv_escape($question) . "\"\r\n";
 
 	if ($code eq "TF") {
 		$ret .= "Points,"     . $TF_POINTS     . "\r\n";
@@ -277,6 +398,10 @@ sub output_desire2learn {
 			   "Warning: $question is neither true nor false\n";
 			}
 		}	
+	elsif (($code eq "SA") || ($code eq "WR")) {
+		$ret .= "Points,"     . $SA_POINTS     . "\r\n";
+		$ret .= "Difficulty," . $SA_DIFFICULTY . "\r\n";
+		}
 	else {
 		$ret .= "Points,"     . $MC_POINTS     . "\r\n";
 		$ret .= "Difficulty," . $MC_DIFFICULTY . "\r\n";
@@ -286,7 +411,7 @@ sub output_desire2learn {
 			$type = shift @line;
 			
 			$ret .= "Option," . ($type eq "correct" ? 100 : 0) . 
-				",$type\r\n";
+				",\"" . &csv_escape($ans) . "\"\r\n";
 			}
 		}
 
@@ -415,6 +540,24 @@ sub fix_whitespaces {
 #
 #----------------------------------------------------------------------
 #
+sub print_q_types {
+	print STDERR "\n";
+
+	if ($TF_COUNT > 0) {
+		printf STDERR "%-15s: %d\n", "True/False", $TF_COUNT;
+		}
+	if ($MC_COUNT > 0) {
+		printf STDERR "%-15s: %d\n", "Multiple Choice", $MC_COUNT;
+		}
+
+	if ($SA_COUNT > 0) {
+		printf STDERR "%-15s: %d\n", "Short Answer", $SA_COUNT;
+		}
+	}
+
+#
+#----------------------------------------------------------------------
+#
 
 sub print_categories {
 	my(%cat) = @_;
@@ -426,7 +569,8 @@ sub print_categories {
 		foreach $k (sort(keys(%cat))) {
 
 			if (defined($cat{$k}{goal})) {
-				printf STDERR "Category: %-10s Num. Questions: %3d   Num. Needed: %3d",
+				printf STDERR "Category: %-10s Num. " .
+					"Questions: %3d   Num. Needed: %3d",
 					$k, $cat{$k}{count}, $cat{$k}{goal};
 
 				if ($cat{$k}{goal} == $cat{$k}{count}) {
@@ -440,7 +584,8 @@ sub print_categories {
 				}
 
 			else {
-				printf STDERR "Category: %-10s Num. Questions: %3d\n", 
+				printf STDERR "Category: %-10s Num. " .
+					"Questions: %3d\n", 
 					$k, $cat{$k}{count};
 				}
 			}
@@ -462,6 +607,7 @@ sub read_file {
 	my(%categories);
 	my($currcategory) = "<unnamed>";
 	my($letter);
+	my($tot,$t_per,$f_per);
 
 	open(FILE,$filename);
 	$currline = <FILE>;
@@ -511,7 +657,7 @@ sub read_file {
 			#	Handle #@Points: xxx
 			#
 			if ($currline =~ 
-			     /#.*\@\s*(tf_|mc_|)points?(:|\s)\s*(\S+)/i) {
+			     /#.*\@\s*(tf_|mc_|sa |)points?(:|\s)\s*(\S+)/i) {
 
 				$letter = substr($1,0,1);
 
@@ -521,9 +667,13 @@ sub read_file {
 				elsif ($letter eq "m" || $letter eq "M") {
 					$MC_POINTS = $3;
 					}
+				elsif ($letter eq "s" || $letter eq "S") {
+					$SA_POINTS = $3;
+					}
 				else {
 					$TF_POINTS = $3;
 					$MC_POINTS = $3;
+					$SA_POINTS = $3;
 					}
 				}
 
@@ -531,12 +681,15 @@ sub read_file {
 			#	Handle #@Difficulty: xxx
 			#
 			if ($currline =~ 
-			     /#.*\@\s*(tf_|mc_|)difficulty(:|\s)\s*(\S+)/i) {
+			     /#.*\@\s*(tf_|mc_|sa |)difficulty(:|\s)\s*(\S+)/i) {
 
 				$letter = substr($1,0,1);
 
 				if ($letter eq "t" || $letter eq "T") {
 					$TF_DIFFICULTY = $3;
+					}
+				elsif ($letter eq "s" || $letter eq "S") {
+					$SA_DIFFICULTY = $3;
 					}
 				elsif ($letter eq "m" || $letter eq "M") {
 					$MC_DIFFICULTY = $3;
@@ -544,6 +697,7 @@ sub read_file {
 				else {
 					$TF_DIFFICULTY = $3;
 					$MC_DIFFICULTY = $3;
+					$SA_DIFFICULTY = $3;
 					}
 				}
 
@@ -577,12 +731,20 @@ sub read_file {
 		}
 	close(FILE);
 
-	print STDERR "Processed $lineno lines, and $questno questions from $filename\n";
+	print STDERR 
+	   "Processed $lineno lines, and $questno questions from $filename\n";
+
 	&print_categories(%categories);
 
+	&print_q_types();
+
 	if ($TRUE_COUNT + $FALSE_COUNT > 0) {
-		print STDERR "\n";
-		print STDERR "$TRUE_COUNT true, $FALSE_COUNT false\n";
+		$tot = $TRUE_COUNT + $FALSE_COUNT;
+		$t_per = 100.0 * $TRUE_COUNT / $tot;
+		$f_per = 100.0 * $FALSE_COUNT / $tot;
+
+		printf STDERR "\n%d true (%5.1f%%), %d false (%5.1f%%)\n",
+		  	$TRUE_COUNT, $t_per, $FALSE_COUNT, $f_per;
 		}
 	}
 #
@@ -602,6 +764,10 @@ sub main {
 	if ($args[0] eq "-d") { $format = "d"; shift @args; }
 	if ($args[0] eq "-p") { $format = "p"; shift @args; }
 	if ($args[0] eq "-t") { $format = "t"; shift @args; }
+
+	#if ($format eq "d") {
+	#	print "# Reminder: The output file must end in .csv to work (brightspace limitation)\n";
+	#	}
 
 	&read_file(shift @args,$format);
 	}

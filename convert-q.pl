@@ -608,15 +608,22 @@ sub read_file {
 	my($currcategory) = "<unnamed>";
 	my($letter);
 	my($tot,$t_per,$f_per);
+	my($isblank,$wasblank);
 
 	open(FILE,$filename);
 	$currline = <FILE>;
 	$nextline = <FILE>;
 
+	$isblank = 1;		# Start off with assuming "blank"
+
 	while($currline ne "") {
 		chomp($currline);
 
 		$lineno++;
+
+		# Keep track if this line and/or the previous line is blank
+		$wasblank = $isblank;
+		$isblank  = ($currline =~ /^\s*$/);
 
 		# Old-style continuation line?
 		#  If so, then convert it to the new style
@@ -718,6 +725,11 @@ sub read_file {
 
 		@line = split(/\t+/,&fix_worddoc($currline));
 
+		if ((!$isblank) && (!$wasblank)) {
+			print STDERR "$lineno: Warning, two non-blank lines next to each other (missing indent?)\n";
+			print STDERR "   $currline\n";
+			}
+
 		if ($#line > -1) {
 			$newline = &process_line($format,$lineno,@line);
 			$questno++;
@@ -766,7 +778,8 @@ sub main {
 	if ($args[0] eq "-t") { $format = "t"; shift @args; }
 
 	#if ($format eq "d") {
-	#	print "# Reminder: The output file must end in .csv to work (brightspace limitation)\n";
+	#	print "# Reminder: The output file must end in " .
+	#	      ".csv to work (brightspace limitation)\n";
 	#	}
 
 	&read_file(shift @args,$format);
